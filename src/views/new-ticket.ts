@@ -1,5 +1,6 @@
 import type { AppContext } from "../context.ts";
 import { CATEGORIES, CATEGORY_LABEL, ticketCode } from "../domain/labels.ts";
+import { guideBySlug, suggestGuides } from "../domain/kb.ts";
 import { SLA_HOURS } from "../domain/sla.ts";
 import { validateNewTicket, type TicketErrors } from "../domain/validation.ts";
 import type { Category, NewTicket, Priority } from "../types.ts";
@@ -7,6 +8,7 @@ import { icon } from "../ui/components.ts";
 import { html, render } from "../ui/html.ts";
 import { navigate } from "../ui/router.ts";
 import { toast } from "../ui/toast.ts";
+import { guideLink } from "./kb.ts";
 
 const PRIORITY_HELP: { value: Priority; title: string; text: string }[] = [
   { value: "critica", title: "Crítica", text: "No puedo trabajar y afecta a varias personas o a clientes." },
@@ -16,7 +18,19 @@ const PRIORITY_HELP: { value: Priority; title: string; text: string }[] = [
 ];
 
 export function renderNewTicket(root: HTMLElement, ctx: AppContext) {
-  draw(root, ctx, { title: "", description: "", category: "hardware", priority: "media" }, {});
+  // Si viene de una guía ("#/nuevo?guia=…"), el ticket arranca con esa información.
+  const from = guideBySlug(new URLSearchParams(location.hash.split("?")[1] ?? "").get("guia") ?? "");
+  draw(
+    root,
+    ctx,
+    {
+      title: "",
+      description: from ? `Seguí la guía "${from.title}" y el problema continúa. ` : "",
+      category: from?.category ?? "hardware",
+      priority: "media",
+    },
+    {},
+  );
 }
 
 function draw(root: HTMLElement, ctx: AppContext, values: NewTicket, errors: TicketErrors) {
@@ -48,6 +62,8 @@ function draw(root: HTMLElement, ctx: AppContext, values: NewTicket, errors: Tic
           />
           ${err("title")}
         </div>
+
+        <div class="suggest" data-suggest aria-live="polite"></div>
 
         <div class="field">
           <label for="category">Categoría</label>
@@ -98,6 +114,22 @@ function draw(root: HTMLElement, ctx: AppContext, values: NewTicket, errors: Tic
   );
 
   const form = root.querySelector<HTMLFormElement>("[data-new-ticket]")!;
+
+  // Mientras la persona escribe, se le sugiere una guía por si lo puede resolver sola.
+  const box = root.querySelector<HTMLElement>("[data-suggest]")!;
+  const suggest = () => {
+    const data = new FormData(form);
+    const found = suggestGuides(`${data.get("title")} ${data.get("description")}`, data.get("category") as Category);
+    render(
+      box,
+      found.length
+        ? html`<p class="suggest__title">${icon("bulb")} Antes de enviarlo, prueba esto. Muchas veces se arregla en minutos:</p>
+            <div class="suggest__list">${found.map(guideLink)}</div>`
+        : html``,
+    );
+  };
+  form.addEventListener("input", suggest);
+  suggest();
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = new FormData(form);

@@ -11,6 +11,8 @@ import { SupabaseRepository } from "./data/supabase.ts";
 import { parseHash } from "./ui/router.ts";
 import { html, render } from "./ui/html.ts";
 import { renderShell } from "./views/layout.ts";
+import { introSeen, renderIntro } from "./views/intro.ts";
+import { renderGuide, renderKbList } from "./views/kb.ts";
 import { renderLogin } from "./views/login.ts";
 import { renderMetrics } from "./views/metrics.ts";
 import { renderNewTicket } from "./views/new-ticket.ts";
@@ -62,6 +64,11 @@ async function draw() {
     if (id !== renderId) return;
 
     const ctx: AppContext = { repo, user, profiles, refresh: draw };
+    // En la demo, quien llega por primera vez ve primero de qué se trata.
+    if (repo.auth.kind === "demo" && !location.hash && !introSeen()) {
+      location.replace("#/como-funciona");
+      return;
+    }
     const route = parseHash(location.hash);
     const view = renderShell(app, ctx, route);
 
@@ -82,12 +89,24 @@ async function draw() {
         await renderMetrics(view, ctx);
         document.title = "Métricas | MesaTI";
         break;
+      case "kb":
+        renderKbList(view, ctx);
+        document.title = "Base de conocimiento | MesaTI";
+        break;
+      case "guide":
+        await renderGuide(view, ctx, route.slug);
+        document.title = `${view.querySelector("h1")?.textContent ?? "Guía"} | MesaTI`;
+        break;
+      case "intro":
+        renderIntro(view, ctx);
+        document.title = "Cómo funciona | MesaTI";
+        break;
       default:
         render(view, html`<div class="empty"><h1>Esta página no existe</h1><a class="btn" href="#/tickets">Ir a la bandeja</a></div>`);
     }
 
     // Al cambiar de página se mueve el foco al contenido, como haría una navegación normal.
-    const routeKey = route.name === "detail" ? `detail-${route.id}` : route.name;
+    const routeKey = route.name === "detail" ? `detail-${route.id}` : route.name === "guide" ? `guide-${route.slug}` : route.name;
     if (routeKey !== lastRouteKey) {
       lastRouteKey = routeKey;
       if (!view.querySelector(":focus")) view.focus({ preventScroll: true });

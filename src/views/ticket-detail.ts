@@ -1,12 +1,14 @@
 import type { AppContext } from "../context.ts";
 import { profileName } from "../context.ts";
 import { CATEGORY_LABEL, PRIORITIES, PRIORITY_LABEL, STATUS_LABEL, STATUSES, ticketCode } from "../domain/labels.ts";
+import { suggestGuides } from "../domain/kb.ts";
 import { formatDuration, SLA_HOURS, slaDeadline } from "../domain/sla.ts";
 import type { Activity, Priority, Status, Ticket } from "../types.ts";
 import { avatar, icon, priorityTag, slaText, statusPill } from "../ui/components.ts";
 import { fullDate, relativeTime } from "../ui/format.ts";
 import { html, render } from "../ui/html.ts";
 import { toast } from "../ui/toast.ts";
+import { guideLink } from "./kb.ts";
 
 export async function renderTicketDetail(root: HTMLElement, ctx: AppContext, id: number) {
   const ticket = await ctx.repo.getTicket(id);
@@ -83,6 +85,8 @@ export async function renderTicketDetail(root: HTMLElement, ctx: AppContext, id:
 
         <aside class="panel" aria-label="Detalles del ticket">
           ${isAgent ? agentControls(ticket, agents, ctx) : clientSummary(ticket, ctx)}
+
+          ${ticket.status !== "cerrado" ? suggested(ticket, isAgent) : null}
 
           <dl class="facts">
             <div><dt>Categoría</dt><dd>${CATEGORY_LABEL[ticket.category]}</dd></div>
@@ -265,4 +269,14 @@ function bind(root: HTMLElement, ctx: AppContext, ticket: Ticket) {
   composer?.querySelector("textarea")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) composer.requestSubmit();
   });
+}
+
+/** La guía de la base de conocimiento que probablemente resuelve este ticket. */
+function suggested(ticket: Ticket, isAgent: boolean) {
+  const found = suggestGuides(`${ticket.title} ${ticket.description}`, ticket.category, 1);
+  if (!found.length) return null;
+  return html`<div class="kb-suggest">
+    <p class="kb-suggest__title">${icon("bulb")} ${isAgent ? "Guía sugerida" : "Mientras tanto, puedes intentar"}</p>
+    ${found.map(guideLink)}
+  </div>`;
 }

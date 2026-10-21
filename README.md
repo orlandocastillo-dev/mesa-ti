@@ -1,8 +1,12 @@
 # MesaTI: mesa de ayuda para soporte técnico
 
-Aplicación web para gestionar incidencias de soporte de TI. Un **usuario** reporta un problema, un **agente** lo toma, conversa con el usuario dentro del ticket y lo cierra. Cada ticket tiene un plazo de solución (SLA) según su prioridad, y el equipo de soporte ve métricas del servicio en tiempo real.
+Aplicación web para el área de TI de una empresa. Cuando a un **empleado** se le daña algo (no imprime, no hay internet, la diadema no tiene micrófono), lo reporta aquí. Un **técnico** lo toma, sigue la guía de la **base de conocimiento**, conversa con el empleado dentro del ticket y lo cierra. Cada ticket tiene un plazo de solución (SLA) según su prioridad, y el equipo de soporte ve métricas del servicio en tiempo real.
+
+**En vivo:** https://mesa-ti-chi.vercel.app. La primera pantalla explica cómo funciona y deja entrar como empleado o como técnico.
 
 ![Bandeja del agente](docs/captura-bandeja.png)
+
+![Cómo funciona](docs/captura-como-funciona.png)
 
 **Pruébalo sin configurar nada:** si no hay credenciales de Supabase, la app arranca en *modo demo* con datos de ejemplo guardados en el navegador. Desde la barra lateral puedes cambiar entre usuarios para ver la app como cliente o como agente.
 
@@ -27,6 +31,22 @@ Aplicación web para gestionar incidencias de soporte de TI. Un **usuario** repo
 | Métricas | Nuevo ticket |
 | --- | --- |
 | ![Métricas](docs/captura-metricas.png) | ![Nuevo ticket](docs/captura-nuevo.png) |
+
+## Base de conocimiento
+
+Las guías de solución de problemas de primer nivel viven dentro de la app (`src/kb/*.md`, en Markdown) y se conectan con los tickets:
+
+- **Al reportar**, mientras el empleado escribe el asunto, la app le sugiere la guía que puede resolver su problema ("Antes de enviarlo, prueba esto"). Es lo que en soporte se llama autoservicio: menos tickets por cosas que se arreglan en cinco minutos.
+- **En cada ticket**, el técnico ve la guía sugerida al lado de los controles.
+- **Desde una guía**, si los pasos no funcionaron, "Reportar el problema" abre el formulario con la categoría y la guía ya anotadas.
+- Los diagramas de diagnóstico se dibujan con Mermaid, que se carga solo cuando se abre una guía.
+- Incluye los scripts de PowerShell que automatizan el diagnóstico (red, datos del equipo, cola de impresión).
+
+La sugerencia (`src/domain/kb.ts`) busca palabras clave enteras, sin tildes ni mayúsculas, y suma un punto si coincide la categoría. Está probada con los tickets de ejemplo.
+
+| Sugerencia al reportar | Guía sugerida en el ticket |
+| --- | --- |
+| ![Sugerencia](docs/captura-sugerencia.png) | ![Guía en el ticket](docs/captura-guia-sugerida.png) |
 
 ## Acuerdos de nivel de servicio (SLA)
 

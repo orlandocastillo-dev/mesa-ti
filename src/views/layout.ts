@@ -18,7 +18,11 @@ export function renderShell(app: HTMLElement, ctx: AppContext, route: Route): HT
             <ul class="nav">
               <li><a href="#/tickets" aria-current="${current("list")}">${icon("inbox")} ${isAgent ? "Bandeja" : "Mis tickets"}</a></li>
               <li><a href="#/nuevo" aria-current="${current("new")}">${icon("plus")} Nuevo ticket</a></li>
+              <li>
+                <a href="#/guias" aria-current="${route.name === "kb" || route.name === "guide" ? "page" : "false"}">${icon("book")} ${isAgent ? "Base de conocimiento" : "Guías de ayuda"}</a>
+              </li>
               ${isAgent ? html`<li><a href="#/metricas" aria-current="${current("metrics")}">${icon("chart")} Métricas</a></li>` : null}
+              <li><a href="#/como-funciona" aria-current="${current("intro")}">${icon("info")} Cómo funciona</a></li>
             </ul>
           </nav>
 
@@ -50,12 +54,12 @@ export function renderShell(app: HTMLElement, ctx: AppContext, route: Route): HT
             ? html`
                 <div class="demo-bar">
                   <p>
-                    <strong>Modo demo.</strong> Los datos se guardan en este navegador.
+                    <strong>Demo con tickets de ejemplo.</strong> Repórtalo como empleado o atiéndelo como técnico.
                   </p>
                   <div class="demo-bar__views" role="group" aria-label="Ver la app como">
                     ${demo.users().filter((u, i, all) => all.findIndex((x) => x.role === u.role) === i).map(
                       (u) => html`<button type="button" class="demo-bar__view" data-view-as="${u.id}" aria-pressed="${u.role === ctx.user.role}">
-                        Ver como ${u.role === "agente" ? "agente" : "cliente"}
+                        ${u.role === "agente" ? "Técnico" : "Empleado"}
                       </button>`,
                     )}
                   </div>
