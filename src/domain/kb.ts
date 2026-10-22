@@ -1,9 +1,6 @@
 import type { Category } from "../types.ts";
 
-/**
- * Base de conocimiento: las guías que sigue el agente para resolver los problemas más comunes.
- * Aquí solo vive lo que la app necesita para sugerirlas; el texto de cada guía está en src/kb/*.md.
- */
+// Base de conocimiento: las guías que sigue el agente para resolver los problemas más comunes
 export interface Guide {
   slug: string;
   title: string;
@@ -60,11 +57,7 @@ export function guideBySlug(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
 }
 
-/**
- * Guías que pueden resolver lo que alguien describe, de la más a la menos parecida.
- * Cuenta las palabras clave que aparecen como palabra entera (o en plural) y suma un punto si coincide
- * la categoría. Hace falta al menos una palabra clave: la categoría sola no basta.
- */
+// Guías que pueden resolver lo que alguien describe, de la más a la menos parecida
 export function suggestGuides(text: string, category?: Category, limit = 2): Guide[] {
   const t = ` ${norm(text).replace(/[^a-z0-9-]+/g, " ")} `;
   return GUIDES.map((g) => {

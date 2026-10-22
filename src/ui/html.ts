@@ -1,7 +1,4 @@
-/**
- * Plantillas HTML seguras: todo valor interpolado se escapa salvo que venga envuelto en `raw()`
- * o sea el resultado de otra plantilla `html`. Evita XSS sin necesidad de un framework.
- */
+// Plantillas HTML seguras: todo valor interpolado se escapa salvo que venga envuelto en `raw()` o sea el resultado de otra plantilla `html`
 const SAFE = Symbol("safe-html");
 
 export interface SafeHtml {

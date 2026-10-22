@@ -39,10 +39,7 @@ export function filterTickets(tickets: Ticket[], filters: TicketFilters, current
   });
 }
 
-/**
- * Orden de atención: primero los tickets activos que vencen antes;
- * al final los cerrados, del más reciente al más antiguo.
- */
+// Orden de atención: primero los tickets activos que vencen antes
 export function sortForTriage(tickets: Ticket[]): Ticket[] {
   return [...tickets].sort((a, b) => {
     const aClosed = a.status === "cerrado";

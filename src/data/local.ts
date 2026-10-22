@@ -11,10 +11,7 @@ export interface KeyValueStorage {
 
 const KEY = "mesati:demo";
 
-/**
- * Implementación en el navegador. Reproduce las mismas reglas que las políticas RLS
- * y los triggers de Supabase para que el modo demo se comporte igual que producción.
- */
+// Implementación en el navegador
 export class LocalRepository implements TicketRepository {
   readonly auth: AuthAdapter;
   private state: DemoState;
@@ -41,7 +38,7 @@ export class LocalRepository implements TicketRepository {
     };
   }
 
-  // -- Persistencia ---------------------------------------------------------
+  // Persistencia
 
   private load(): DemoState {
     try {
@@ -77,7 +74,7 @@ export class LocalRepository implements TicketRepository {
     this.listeners.forEach((fn) => fn());
   }
 
-  // -- Utilidades de permisos ----------------------------------------------
+  // Utilidades de permisos
 
   private me(): Profile {
     const user = this.state.profiles.find((p) => p.id === this.state.currentUserId);
@@ -109,7 +106,7 @@ export class LocalRepository implements TicketRepository {
     return entry;
   }
 
-  // -- API pública ----------------------------------------------------------
+  // API pública
 
   async currentUser() {
     return this.me();

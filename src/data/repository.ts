@@ -14,10 +14,7 @@ export type AuthAdapter =
       signOut: () => Promise<void>;
     };
 
-/**
- * Contrato que cumplen tanto el modo demo (localStorage) como Supabase.
- * Las vistas solo conocen esta interfaz, nunca el origen de los datos.
- */
+// Contrato que cumplen tanto el modo demo (localStorage) como Supabase
 export interface TicketRepository {
   readonly auth: AuthAdapter;
   currentUser(): Promise<Profile | null>;
@@ -28,7 +25,7 @@ export interface TicketRepository {
   createTicket(input: NewTicket): Promise<Ticket>;
   updateTicket(id: number, patch: TicketPatch): Promise<Ticket>;
   addComment(ticketId: number, body: string): Promise<Activity>;
-  /** Avisa cuando los datos cambian desde otra pestaña u otro usuario. Devuelve la función para cancelar. */
+  // Avisa cuando los datos cambian desde otra pestaña u otro usuario
   subscribe(onChange: () => void): () => void;
 }
 

@@ -1,9 +1,6 @@
--- MesaTI: esquema de base de datos para Supabase (PostgreSQL 15+)
--- Ejecutar completo en el SQL Editor del proyecto. Es idempotente en lo posible.
+-- MesaTI: esquema de base de datos para Supabase (PostgreSQL 15+) Ejecutar completo en el SQL Editor del proyecto
 
--- ---------------------------------------------------------------------------
 -- Tipos
--- ---------------------------------------------------------------------------
 do $$ begin
   create type public.user_role as enum ('cliente', 'agente');
 exception when duplicate_object then null; end $$;
@@ -24,9 +21,7 @@ do $$ begin
   create type public.activity_kind as enum ('comentario', 'estado', 'prioridad', 'asignacion');
 exception when duplicate_object then null; end $$;
 
--- ---------------------------------------------------------------------------
 -- Tablas
--- ---------------------------------------------------------------------------
 create table if not exists public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   full_name   text not null,
@@ -66,9 +61,7 @@ create table if not exists public.ticket_activity (
 
 create index if not exists activity_ticket_idx on public.ticket_activity (ticket_id, created_at);
 
--- ---------------------------------------------------------------------------
 -- Funciones auxiliares
--- ---------------------------------------------------------------------------
 create or replace function public.is_agent()
 returns boolean
 language sql stable security definer set search_path = public
@@ -93,8 +86,7 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- Registra cambios de estado, prioridad y asignación en el historial,
--- y mantiene updated_at / resolved_at.
+-- Registra cambios de estado, prioridad y asignación en el historial, y mantiene updated_at / resolved_at
 create or replace function public.log_ticket_changes()
 returns trigger
 language plpgsql security definer set search_path = public
@@ -148,9 +140,7 @@ create trigger activity_first_response
   after insert on public.ticket_activity
   for each row execute function public.mark_first_response();
 
--- ---------------------------------------------------------------------------
 -- Seguridad a nivel de fila (RLS)
--- ---------------------------------------------------------------------------
 alter table public.profiles enable row level security;
 alter table public.tickets enable row level security;
 alter table public.ticket_activity enable row level security;
@@ -199,14 +189,9 @@ create policy "comentar" on public.ticket_activity
     )
   );
 
--- ---------------------------------------------------------------------------
--- Tiempo real: la bandeja se actualiza sola cuando cambia un ticket.
--- ---------------------------------------------------------------------------
+-- Tiempo real: la bandeja se actualiza sola cuando cambia un ticket
 do $$ begin
   alter publication supabase_realtime add table public.tickets;
 exception when duplicate_object then null; end $$;
 
--- ---------------------------------------------------------------------------
--- Para convertir un usuario en agente (ejecutar manualmente):
---   update public.profiles set role = 'agente' where id = '<uuid del usuario>';
--- ---------------------------------------------------------------------------
+-- Para convertir un usuario en agente (ejecutar manualmente)
